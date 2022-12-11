@@ -1,0 +1,11 @@
+Passos para realização do trabalho
+1 - Escolher dataset: letras
+2 - Extrair características em um arquivo txt: pixel preto e branco
+3 - Treinar e testar os classificadores com as características extraídas: 
+4 - Gerar uma saída com a acurácia (0%-100%) e uma matriz de confusão (NxN) 
+indicando as taxas de acertos e erros para as N classificadores
+5 - Fazer relatório, imprimir e entregar para o professor
+
+OBS: pode ser em qualquer linguagem
+OBS2: classificadores que devem ser empregados - k-NN, Árvore de Decisão, SVM, MLP,
+Random Forests
