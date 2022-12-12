@@ -1,83 +1,172 @@
 import numpy as np
-from sklearn import svm
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import classification_report
-from sklearn.neural_network import MLPClassifier
-from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV, train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.datasets import make_classification
-from sklearn.metrics import classification_report
 from sklearn import tree
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix as matriz
+from sklearn.neural_network import MLPClassifier as MPC
+from sklearn.tree import DecisionTreeClassifier as tree
+from sklearn.ensemble import RandomForestClassifier as forest
 
 # k-NN classifier
-def k_nn(X_train, y_train, X_test, y_test):
-    neigh = KNeighborsClassifier(n_neighbors=1, metric='euclidean')
-    neigh.fit(X_train, y_train)
-    neigh.score(X_test, y_test)
-    print(classification_report(y_test, neigh.predict(X_test)))
+def k_nn(X_train, y_train, X_test, y_test, n_neighbors):
+    file = open("./results/knn" + str(n_neighbors) + ".txt", 'w')
 
+    neigh = KNeighborsClassifier(n_neighbors, metric='euclidean')
+    neigh.fit(X_train, y_train)
+    knn_probs = neigh.predict_proba(X_test)
+    acuracia = neigh.score(np.array(X_test), y_test)
+    y_pred = neigh.predict(X_test)
+    # neigh.score(X_test, y_test)
+    matrix = confusion_matrix(y_test, y_pred)
+
+    print("Matriz de confusão para knn k = ", n_neighbors, "\n")
+    file.writelines("Matriz de confusão para knn k = " +
+                    str(n_neighbors) + "\n\n")
+
+    a = []
+
+    for x in range(len(matrix)):
+        a.append([])
+        for j in matrix[x]:
+            a[x].append(j)
+            for x in a:
+                print(x)
+                file.writelines(str(x) + "\n")
+
+    print("\nAcurácia de: ", acuracia, "%.\n")
+    file.writelines("\n\nAcurácia de: " + str(acuracia) + "%.")
+    file.close()
+    return knn_probs
 
 # SVM com Grid search
+
+
 def svm(X_train, y_train, X_test, y_test):
-    C_range = 2. ** np.arange(-5,15,2)
-    gamma_range = 2. ** np.arange(3,-15,-2)
-    k = [ 'rbf']
-    # instancia o classificador, gerando probabilidades
-    srv = svm.SVC(probability=True, kernel='rbf')
-    ss = StandardScaler()
-    pipeline = Pipeline([ ('scaler', ss), ('svm', srv) ])
+    file = open("./results/svm.txt", 'w')
 
-    param_grid = {
-        'svm__C' : C_range,
-        'svm__gamma' : gamma_range
-    }
+    clf = SVC(probability=True)
 
-    # faz a busca
-    grid = GridSearchCV(pipeline, param_grid, n_jobs=-1, verbose=True)
-    grid.fit(X_train, y_train)
+    clf.fit(np.array(X_train), y_train)
 
-# # recupera o melhor modelo
-    model = grid.best_estimator_
-    print(classification_report(y_test, model.predict(X_test)))
+    svm_probs = clf.predict_proba(X_test)
+
+    acuracia = clf.score(np.array(X_test), y_test)
+
+    y_pred = clf.predict(X_test)
+
+    matrix = confusion_matrix(y_test, y_pred)
+
+    print("Matriz de confusão para SVM:\n")
+    file.writelines("Matriz de confusão para SVM:\n\n")
+
+    a = []
+
+    for x in range(len(matrix)):
+        a.append([])
+        for j in matrix[x]:
+            a[x].append(j)
+
+    for x in a:
+        print(x)
+        file.writelines(str(x) + "\n")
+
+    print("\nAcurácia de: ", acuracia, "%.\n")
+    file.writelines("\n\nAcurácia de: " + str(acuracia) + "%.")
+
+    file.close()
+
+    return svm_probs
 
 
 # MLP
-def mlp(y_train, y_test):
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.fit_transform(X_test)
-    
-    clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(20), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(10), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(10,10), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(10,50), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,100,100), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(71,71), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(200,200,200,200), random_state=1)
-    # clf = MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(500,500,500,500), random_state=1)
-    
-    clf.fit(X_train, y_train)
-    print(clf.predict(X_test))
-    print(classification_report(y_test, clf.predict(X_test)))
+def mlp(X_train, X_test, y_train, y_test):
+    file = open("./results/mlp.txt", 'w')
+    mlp = MPC(random_state=0, max_iter=10000)
+    mlp.fit(np.array(X_train), y_train)
+    mpl_probs = mlp.predict_proba(X_test)
+    acuracia = mlp.score(np.array(X_test), y_test)
+    y_pred = mlp.predict(X_test)
+    matrix = matriz(y_test, y_pred)
 
+    print("Matriz de confusão para MLP:\n")
+    file.writelines("Matriz de confusão para MLP:\n\n")
+
+    a = []
+
+    for x in range(len(matrix)):
+        a.append([])
+        for j in matrix[x]:
+            a[x].append(j)
+
+    for x in a:
+        print(x)
+        file.writelines(str(x) + "\n")
+
+    print("\nAcurácia de: ", acuracia, "%.\n")
+    file.writelines("\n\nAcurácia de: " + str(acuracia) + "%.")
+
+    file.close()
 
 # Random Forest Classifier
+
+
 def randomForest(X_train, y_train, X_test, y_test):
-    X, y = make_classification(n_samples=1000, n_features=4, n_informative=2, n_redundant=0, random_state=0, shuffle=False)
-    clf = RandomForestClassifier(n_estimators=10000, max_depth=30, random_state=1)
-    clf.fit(X_train, y_train)
-    #print(clf.feature_importances_)
-    print(clf.predict(X_test))
-    print(classification_report(y_test, clf.predict(X_test)))
+    file = open("./results/randomForest.txt", 'w')
+    rf = forest(n_estimators=100)
+    rf.fit(np.array(X_train), y_train)
+    rf_probs = rf.predict_proba(X_test)
+    acuracia = rf.score(np.array(X_test), y_test)
+    y_pred = rf.predict(X_test)
+    matrix = confusion_matrix(y_test, y_pred)
+
+    print("Matriz de confusão para Random Forest:\n")
+    file.writelines("Matriz de confusão para Random Forest:\n\n")
+
+    a = []
+
+    for x in range(len(matrix)):
+        a.append([])
+        for j in matrix[x]:
+            a[x].append(j)
+
+    for x in a:
+        print(x)
+        file.writelines(str(x) + "\n")
+
+    print("\nAcurácia de: ", acuracia, "%.\n")
+    file.writelines("\n\nAcurácia de: " + str(acuracia) + "%.")
+
+    file.close()
 
 
 # Decision Tree
 def decision_tree(X_train, y_train, X_test, y_test):
-    clf = tree.DecisionTreeClassifier()
-    clf.fit(X_train, y_train)
-    print(clf.predict(X_test))
-    print(classification_report(y_test, clf.predict(X_test)))
-    tree.plot_tree(clf)
+    file = open("./results/decisionTree.txt", 'w')
+    dt = tree()
+    dt.fit(np.array(X_train), y_train)
+    dt_probs = dt.predict_proba(X_test)
+    acuracia = dt.score(np.array(X_test), y_test)
+    y_pred = dt.predict(X_test)
+    matrix = confusion_matrix(y_test, y_pred)
+
+    print("Matriz de confusão para Decision Tree:\n")
+    file.writelines("Matriz de confusão para Decision Tree:\n\n")
+
+    a = []
+
+    for x in range(len(matrix)):
+        a.append([])
+        for j in matrix[x]:
+            a[x].append(j)
+
+    for x in a:
+        print(x)
+        file.writelines(str(x) + "\n")
+
+    print("\nAcurácia de: ", acuracia, "%.\n")
+    file.writelines("\n\nAcurácia de: " + str(acuracia) + "%.")
+
+    file.close()
+
+    return dt_probs
