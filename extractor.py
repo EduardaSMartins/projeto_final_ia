@@ -1,5 +1,5 @@
 import os
-from PIL import Image, ImageGrab
+from PIL import Image
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler as min_max
 
@@ -22,8 +22,7 @@ def redimention(dataset):
             print(path, j)
             image = Image.open(path)
             img_resized = image.resize((30, 30))
-            # img_resized.save('./results/' + character + '/' + images[j])
-            img_resized.save('./testando/' + character + '/' + images[j])
+            img_resized.save('./results/' + character + '/' + images[j])
 
 
 def pixels(dataset):
